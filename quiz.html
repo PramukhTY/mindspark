@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .quiz-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 6px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background-color: #4285f4;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .question-number {
+            font-weight: bold;
+            color: #4285f4;
+            margin-bottom: 5px;
+            animation: slideInLeft 0.5s;
+        }
+        .question {
+            font-size: 18px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            margin: 10px 0;
+            padding: 10px 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            animation: slideInRight 0.5s;
+            animation-fill-mode: both;
+        }
+        .options li:hover {
+            background-color: #e9e9e9;
+        }
+        .options li.selected {
+            background-color: #d0e8ff;
+            border-left: 4px solid #4285f4;
+        }
+        .options li:nth-child(1) { animation-delay: 0.1s; }
+        .options li:nth-child(2) { animation-delay: 0.2s; }
+        .options li:nth-child(3) { animation-delay: 0.3s; }
+        .options li:nth-child(4) { animation-delay: 0.4s; }
+        .btn {
+            background-color: #4285f4;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: block;
+            margin: 20px 0 10px auto;
+            animation: fadeIn 0.5s;
+            animation-delay: 0.6s;
+            animation-fill-mode: both;
+        }
+        .btn:hover {
+            background-color: #3367d6;
+        }
+        .btn:disabled {
+            background-color: #a9a9a9;
+            cursor: not-allowed;
+        }
+        .result {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+            animation: zoomIn 0.8s;
+        }
+        .result-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #4285f4;
+        }
+        .score-display {
+            font-size: 60px;
+            font-weight: bold;
+            color: #4285f4;
+            margin: 30px 0;
+        }
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-color: #f5f5f5;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .score-circle::before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border-radius: 50%;
+            background-color: white;
+            z-index: 1;
+        }
+        .score-text {
+            position: relative;
+            z-index: 2;
+        }
+        .score-percent {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4285f4;
+        }
+        .score-fraction {
+            font-size: 16px;
+            color: #777;
+            margin-top: 5px;
+        }
+        .timer {
+            font-size: 20px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #d9534f;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .feedback {
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        .restart-btn {
+            background-color: #4285f4;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        .restart-btn:hover {
+            background-color: #3367d6;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideInLeft {
+            from { transform: translateX(-30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes fillCircle {
+            from { stroke-dashoffset: 565.48; }
+            to { stroke-dashoffset: var(--final-offset); }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div class="timer" id="timer">10</div>
+        <div class="question-number" id="question-number">Question 1 of 10</div>
+        <div class="question" id="question"></div>
+        <ul class="options" id="options"></ul>
+        <div class="feedback" id="feedback"></div>
+        <button class="btn" id="nextBtn" disabled>Next Question</button>
+        <div class="result" id="result">
+            <div class="result-title">Quiz Completed!</div>
+            <div class="score-circle">
+                <svg width="200" height="200" viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="90" fill="none" stroke="#e6e6e6" stroke-width="10" />
+                    <circle id="score-circle" cx="100" cy="100" r="90" fill="none" stroke="#4285f4" stroke-width="10" 
+                        stroke-dasharray="565.48" stroke-dashoffset="565.48" transform="rotate(-90 100 100)" />
+                </svg>
+                <div class="score-text">
+                    <div class="score-percent" id="score-percent">0%</div>
+                    <div class="score-fraction" id="score-fraction">0/10</div>
+                </div>
+            </div>
+            <div id="score-message">Keep practicing to improve your DSA knowledge!</div>
+            <button class="restart-btn" id="restartBtn">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "What is the time complexity of binary search?",
+                options: ["O(n)", "O(log n)", "O(n log n)", "O(n²)"],
+                answer: 1
+            },
+            {
+                question: "Which data structure operates on a LIFO (Last In First Out) principle?",
+                options: ["Queue", "Stack", "Linked List", "Heap"],
+                answer: 1
+            },
+            {
+                question: "What is the worst-case time complexity of quicksort?",
+                options: ["O(n)", "O(log n)", "O(n log n)", "O(n²)"],
+                answer: 3
+            },
+            {
+                question: "Which of these is not a valid way to traverse a binary tree?",
+                options: ["Pre-order", "In-order", "Horizontal-order", "Post-order"],
+                answer: 2
+            },
+            {
+                question: "What data structure would be most efficient for implementing a priority queue?",
+                options: ["Array", "Linked List", "Heap", "Stack"],
+                answer: 2
+            },
+            {
+                question: "Which sorting algorithm has a guaranteed worst-case time complexity of O(n log n)?",
+                options: ["Bubble Sort", "Quick Sort", "Merge Sort", "Insertion Sort"],
+                answer: 2
+            },
+            {
+                question: "What is the time complexity of accessing an element in a hash table on average?",
+                options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+                answer: 0
+            },
+            {
+                question: "Which algorithm is commonly used to find the shortest path in a weighted graph?",
+                options: ["DFS", "BFS", "Dijkstra's Algorithm", "Binary Search"],
+                answer: 2
+            },
+            {
+                question: "What is the space complexity of recursive fibonacci implementation without memoization?",
+                options: ["O(1)", "O(log n)", "O(n)", "O(2^n)"],
+                answer: 2
+            },
+            {
+                question: "Which data structure is best for implementing a dictionary?",
+                options: ["Array", "Linked List", "Hash Table", "Stack"],
+                answer: 2
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer;
+        let selectedAnswer = null;
+        const timeLimit = 10; // 10 seconds for each question
+
+        function loadQuestion() {
+            const questionNumberElement = document.getElementById('question-number');
+            const questionElement = document.getElementById('question');
+            const optionsElement = document.getElementById('options');
+            const nextBtn = document.getElementById('nextBtn');
+            const timerElement = document.getElementById('timer');
+            const progressElement = document.getElementById('progress');
+            const feedbackElement = document.getElementById('feedback');
+
+            // Reset state
+            nextBtn.disabled = true;
+            selectedAnswer = null;
+            feedbackElement.style.display = 'none';
+            
+            // Update progress bar
+            const progressPercent = (currentQuestionIndex / questions.length) * 100;
+            progressElement.style.width = `${progressPercent}%`;
+
+            if (currentQuestionIndex < questions.length) {
+                // Update question number
+                questionNumberElement.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+                
+                // Load question
+                const currentQuestion = questions[currentQuestionIndex];
+                questionElement.textContent = currentQuestion.question;
+                optionsElement.innerHTML = '';
+
+                // Create option elements
+                currentQuestion.options.forEach((option, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = option;
+                    li.dataset.index = index;
+                    li.addEventListener('click', () => selectOption(li, index));
+                    optionsElement.appendChild(li);
+                });
+
+                nextBtn.style.display = 'block';
+                startTimer(timerElement);
+            } else {
+                showResult();
+            }
+        }
+
+        function selectOption(optionElement, index) {
+            // Clear previous selections
+            document.querySelectorAll('.options li').forEach(li => {
+                li.classList.remove('selected');
+            });
+            
+            // Select current option
+            optionElement.classList.add('selected');
+            selectedAnswer = index;
+            
+            // Enable next button
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function startTimer(timerElement) {
+            clearInterval(timer); // Clear any existing timer
+            
+            let timeLeft = timeLimit;
+            timerElement.textContent = timeLeft;
+
+            timer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    showFeedback(false);
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        loadQuestion();
+                    }, 1500);
+                }
+            }, 1000);
+        }
+
+        function showFeedback(isCorrect) {
+            clearInterval(timer); // Stop the timer
+            
+            const feedbackElement = document.getElementById('feedback');
+            feedbackElement.textContent = isCorrect ? 'Correct!' : 'Incorrect!';
+            feedbackElement.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+            feedbackElement.style.display = 'block';
+            
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function showResult() {
+            const questionElement = document.getElementById('question');
+            const questionNumberElement = document.getElementById('question-number');
+            const optionsElement = document.getElementById('options');
+            const nextBtn = document.getElementById('nextBtn');
+            const timerElement = document.getElementById('timer');
+            const resultElement = document.getElementById('result');
+            const feedbackElement = document.getElementById('feedback');
+            const progressElement = document.getElementById('progress');
+
+            // Hide quiz elements
+            questionElement.style.display = 'none';
+            questionNumberElement.style.display = 'none';
+            optionsElement.style.display = 'none';
+            nextBtn.style.display = 'none';
+            timerElement.style.display = 'none';
+            feedbackElement.style.display = 'none';
+            
+            // Complete progress bar
+            progressElement.style.width = '100%';
+            
+            // Show result
+            resultElement.style.display = 'block';
+            
+            // Update score elements
+            const scorePercent = Math.round((score / questions.length) * 100);
+            document.getElementById('score-percent').textContent = `${scorePercent}%`;
+            document.getElementById('score-fraction').textContent = `${score}/${questions.length}`;
+            
+            // Animate score circle
+            const scoreCircle = document.getElementById('score-circle');
+            const circumference = 2 * Math.PI * 90; // 2πr
+            const finalOffset = circumference - (scorePercent / 100) * circumference;
+            document.documentElement.style.setProperty('--final-offset', finalOffset);
+            
+            // Apply animation
+            scoreCircle.style.animation = 'fillCircle 1.5s ease-out forwards';
+            
+            // Set score message
+            const scoreMessage = document.getElementById('score-message');
+            if (scorePercent >= 90) {
+                scoreMessage.textContent = 'Excellent! You"re a DSA master!';
+            } else if (scorePercent >= 70) {
+                scoreMessage.textContent = 'Great job! You have solid DSA knowledge!';
+            } else if (scorePercent >= 50) {
+                scoreMessage.textContent = 'Good effort! Keep practicing your DSA skills.';
+            } else {
+                scoreMessage.textContent = 'Keep studying! DSA concepts take time to master.';
+            }
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (selectedAnswer !== null) {
+                const isCorrect = selectedAnswer === questions[currentQuestionIndex].answer;
+                if (isCorrect) {
+                    score++;
+                }
+                
+                showFeedback(isCorrect);
+                
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    loadQuestion();
+                }, 1500);
+            }
+        });
+
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            // Reset quiz state
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            // Show quiz elements
+            document.getElementById('question').style.display = 'block';
+            document.getElementById('question-number').style.display = 'block';
+            document.getElementById('options').style.display = 'block';
+            
+            // Hide result
+            document.getElementById('result').style.display = 'none';
+            
+            // Reload first question
+            loadQuestion();
+        });
+
+        // Start the quiz
+        loadQuestion();
+    </script>
+</body>
+</html>
